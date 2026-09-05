@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   GitBranch,
   X,
@@ -31,11 +32,16 @@ export function WorkflowNodeTreeModal({
   onClose,
   caseData,
 }: WorkflowNodeTreeModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"graph" | "tree" | "matrix">("graph");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const caseType = caseData?.caseType || "payment_failure";
   const customerName = caseData?.customerName || caseData?.customerSnapshot?.name || "Rahul Sharma";
@@ -69,8 +75,8 @@ export function WorkflowNodeTreeModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150 print:p-0 print:bg-white print:static">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in print:p-0 print:bg-white print:static">
       <div className="relative w-full max-w-5xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col print:max-h-none print:shadow-none print:w-full">
         {/* Modal Top Header */}
         <div className="p-5 border-b border-[#E7EAF0] flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#FAFBFF]">
@@ -504,6 +510,7 @@ export function WorkflowNodeTreeModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

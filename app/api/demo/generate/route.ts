@@ -5,8 +5,11 @@ export async function POST(req: NextRequest) {
   try {
     let count = 50;
     try {
-      const body = await req.json();
-      if (body.count) count = Number(body.count);
+      const rawText = await req.text();
+      if (rawText && rawText.trim().length > 0) {
+        const body = JSON.parse(rawText);
+        if (body.count) count = Number(body.count);
+      }
     } catch {
       // Default to 50
     }
