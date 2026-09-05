@@ -38,6 +38,7 @@ const NAV_ITEMS = [
   { label: "Customers", href: "/customers", icon: Users },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Audit Trail", href: "/audit", icon: History },
+  { label: "Guardrails", href: "/guardrails", icon: ShieldX, badge: "10 Rules" },
   { label: "Simulation", href: "/simulation", icon: Cpu, badge: "Engine" },
   { label: "Settings", href: "/settings", icon: Settings },
 ];

@@ -119,6 +119,10 @@ export interface PolicyCheckInput {
   mandateAttemptCount?: number;
   voiceAttemptsCount?: number;
   promiseAlreadyActive?: boolean;
+  customerDeclined?: boolean;
+  proposedDiscountPct?: number;
+  messageText?: string;
+  riskScore?: number;
 }
 
 export interface PolicyRuleResult {
