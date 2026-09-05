@@ -519,7 +519,7 @@ export function DataSourceSelector({
 
       {/* STAGE 2: TRANSACTIONS IMPORTED -> EXPLICIT "ANALYZE WITH RECOVEROAI" BUTTON */}
       {flowState === "imported" && (
-        <div className="py-6 px-4 max-w-lg mx-auto text-center space-y-6 animate-in fade-in">
+        <div className="py-6 px-4 max-w-lg mx-auto text-center space-y-6 animate-fade-in">
           <div className="w-14 h-14 rounded-2xl bg-[#EAFBF4] text-[#13B981] flex items-center justify-center mx-auto border border-[#13B981]/30">
             <CheckCircle2 className="w-7 h-7" />
           </div>
@@ -564,7 +564,7 @@ export function DataSourceSelector({
 
       {/* STAGE 3: AI PROCESSING ANIMATION */}
       {flowState === "analyzing" && (
-        <div className="py-8 px-4 max-w-lg mx-auto text-center space-y-6 animate-in fade-in">
+        <div className="py-8 px-4 max-w-lg mx-auto text-center space-y-6 animate-fade-in">
           <div className="w-14 h-14 rounded-2xl bg-[#F1EDFF] text-[#5B3DF5] flex items-center justify-center mx-auto border border-[#5B3DF5]/30">
             <RefreshCw className="w-7 h-7 animate-spin" />
           </div>
@@ -617,7 +617,7 @@ export function DataSourceSelector({
 
       {/* STAGE 4: ANALYSIS COMPLETE -> SUMMARY STATS & DASHBOARD ACTIVATION */}
       {flowState === "completed" && (
-        <div className="py-6 px-4 max-w-lg mx-auto text-center space-y-6 animate-in fade-in">
+        <div className="py-6 px-4 max-w-lg mx-auto text-center space-y-6 animate-fade-in">
           <div className="w-14 h-14 rounded-2xl bg-[#EAFBF4] text-[#13B981] flex items-center justify-center mx-auto border border-[#13B981]/30">
             <Sparkles className="w-7 h-7" />
           </div>

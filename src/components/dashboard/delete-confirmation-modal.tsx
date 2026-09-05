@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   AlertTriangle,
   Trash2,
@@ -21,10 +22,15 @@ export function DeleteConfirmationModal({
   onClose,
   onSuccess,
 }: DeleteConfirmationModalProps) {
+  const [mounted, setMounted] = useState(false);
   const [captchaCode, setCaptchaCode] = useState("");
   const [userInput, setUserInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Generate random 5-character alphanumeric captcha
   const generateCaptcha = () => {
@@ -44,7 +50,7 @@ export function DeleteConfirmationModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const isCaptchaValid =
     userInput.trim().toUpperCase() === captchaCode.toUpperCase();
@@ -77,8 +83,8 @@ export function DeleteConfirmationModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
       <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl border border-[#E7EAF0] overflow-hidden">
         {/* Close Button */}
         <button
@@ -196,6 +202,7 @@ export function DeleteConfirmationModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

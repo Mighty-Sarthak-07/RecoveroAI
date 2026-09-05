@@ -41,6 +41,7 @@ export default function RecoveryCaseDetailPage({
   const [executing, setExecuting] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [escalating, setEscalating] = useState(false);
+  const [callingVoiceAgent, setCallingVoiceAgent] = useState(false);
 
   const fetchDetail = async () => {
     try {
@@ -52,6 +53,30 @@ export default function RecoveryCaseDetailPage({
       console.error(e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleTriggerVoiceCall = async (customUtterance?: string) => {
+    setCallingVoiceAgent(true);
+    try {
+      const res = await fetch(`/api/recoveries/${id}/call`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcriptInput: customUtterance || "Namaste, main kal subah 10 baje tak pay kar dunga pakka.",
+        }),
+      });
+      const resData = await res.json();
+      if (!res.ok || !resData.success) {
+        throw new Error(resData.executionMessage || resData.error || "Voice call failed");
+      }
+
+      alert(`📞 Voice Agent Call Complete!\nIntent: ${resData.detectedIntent}\n\n${resData.executionMessage}`);
+      await fetchDetail();
+    } catch (e: any) {
+      alert("Voice Call Error: " + e.message);
+    } finally {
+      setCallingVoiceAgent(false);
     }
   };
 
@@ -188,14 +213,25 @@ export default function RecoveryCaseDetailPage({
           </button>
 
           {!isRecovered && !isBlocked && (
-            <button
-              onClick={handleRunAgent}
-              disabled={runningAgent}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#5B3DF5] hover:bg-[#4D32D8] rounded-lg transition-colors shadow-sm disabled:opacity-50"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              {runningAgent ? "Gemini AI Analyzing..." : "Run Gemini AI Diagnosis"}
-            </button>
+            <>
+              <button
+                onClick={handleRunAgent}
+                disabled={runningAgent}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#5B3DF5] hover:bg-[#4D32D8] rounded-lg transition-colors shadow-sm disabled:opacity-50"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                {runningAgent ? "Gemini AI Analyzing..." : "Run Gemini AI Diagnosis"}
+              </button>
+
+              <button
+                onClick={() => handleTriggerVoiceCall()}
+                disabled={callingVoiceAgent}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-[#2F6BFF] hover:bg-[#2050D0] rounded-lg transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                <PhoneCall className="w-3.5 h-3.5" />
+                {callingVoiceAgent ? "Initiating Guardrail & Call..." : "Approve & Call Voice Agent"}
+              </button>
+            </>
           )}
 
           {(recCase?.status === "APPROVED" || recCase?.status === "ESCALATED") && (

@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import {
   Sparkles,
@@ -33,7 +34,13 @@ export function AnalysisCompleteModal({
   stats,
   cases = [],
 }: AnalysisCompleteModalProps) {
-  if (!isOpen) return null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const casesCount = stats?.casesFound ?? cases.length ?? 5;
   const revenueRupees = stats?.revenueAtRiskRupees ?? 284000;
@@ -56,8 +63,8 @@ export function AnalysisCompleteModal({
     return <CreditCard className="w-3.5 h-3.5 text-[#5B3DF5]" />;
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in">
       <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-[#E7EAF0] overflow-hidden">
         {/* Close Button */}
         <button
@@ -188,6 +195,7 @@ export function AnalysisCompleteModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
