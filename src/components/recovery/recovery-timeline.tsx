@@ -1,10 +1,12 @@
-import React from "react";
-import { Check, Clock, AlertCircle } from "lucide-react";
+import React, { useState } from "react";
+import { Check, Clock, AlertCircle, GitBranch } from "lucide-react";
 import { RecoveryState } from "@/src/types/recovery";
+import { WorkflowNodeTreeModal } from "@/src/components/recovery/workflow-node-tree";
 
 interface RecoveryTimelineProps {
   status: RecoveryState | string;
   amountRecovered?: number;
+  caseData?: any;
 }
 
 const STAGES: Array<{ id: RecoveryState; label: string }> = [
@@ -17,7 +19,9 @@ const STAGES: Array<{ id: RecoveryState; label: string }> = [
   { id: "RECOVERED", label: "7. Recovered" },
 ];
 
-export function RecoveryTimeline({ status, amountRecovered }: RecoveryTimelineProps) {
+export function RecoveryTimeline({ status, amountRecovered, caseData }: RecoveryTimelineProps) {
+  const [isNodeModalOpen, setIsNodeModalOpen] = useState(false);
+
   const isRecovered = status === "RECOVERED";
   const isBlocked = status === "BLOCKED";
   const isEscalated = status === "ESCALATED";
@@ -47,18 +51,29 @@ export function RecoveryTimeline({ status, amountRecovered }: RecoveryTimelinePr
 
   return (
     <div className="bg-white p-6 rounded-xl border border-[#E7EAF0] shadow-sm">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h3 className="text-sm font-bold text-[#111827]">Closed-Loop Recovery Timeline</h3>
           <p className="text-xs text-[#667085]">
             Chronological progression from risk detection to financial verification
           </p>
         </div>
-        {isRecovered && amountRecovered && (
-          <span className="text-xs font-bold text-[#13B981] bg-[#EAFBF4] px-3 py-1 rounded-full border border-[#13B981]/30">
-            ✓ ₹{(amountRecovered / 100).toLocaleString()} Verified & Recovered
-          </span>
-        )}
+        <div className="flex items-center gap-3 flex-wrap">
+          {isRecovered && amountRecovered && (
+            <span className="text-xs font-bold text-[#13B981] bg-[#EAFBF4] px-3 py-1 rounded-full border border-[#13B981]/30">
+              ✓ ₹{(amountRecovered / 100).toLocaleString()} Verified & Recovered
+            </span>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsNodeModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-extrabold text-white bg-[#5B3DF5] hover:bg-[#4D32D8] rounded-xl transition-all shadow-xs cursor-pointer"
+          >
+            <GitBranch className="w-3.5 h-3.5" />
+            Generate / View Workflow Tree &amp; Nodes
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
@@ -112,6 +127,14 @@ export function RecoveryTimeline({ status, amountRecovered }: RecoveryTimelinePr
           );
         })}
       </div>
+
+      {/* Node Tree & DAG Modal */}
+      <WorkflowNodeTreeModal
+        isOpen={isNodeModalOpen}
+        onClose={() => setIsNodeModalOpen(false)}
+        caseData={caseData}
+      />
     </div>
   );
 }
+

@@ -51,16 +51,22 @@ export default function LandingPage() {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <Link
-            href="/dashboard"
+            href="/onboarding"
             className="text-sm font-semibold text-[#111827] hover:text-[#5B3DF5] px-3 py-2 transition-colors hidden sm:block"
           >
             Sign in
           </Link>
           <Link
+            href="/onboarding"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#F1EDFF] text-[#5B3DF5] hover:bg-[#5B3DF5] hover:text-white text-xs font-bold transition-all border border-[#5B3DF5]/20"
+          >
+            Connect Data Source
+          </Link>
+          <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#5B3DF5] hover:bg-[#4D32D8] text-white text-sm font-bold transition-all shadow-sm"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#5B3DF5] hover:bg-[#4D32D8] text-white text-xs font-bold transition-all shadow-sm"
           >
             Open Dashboard <ArrowRight className="w-4 h-4" />
           </Link>

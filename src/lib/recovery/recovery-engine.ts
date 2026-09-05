@@ -50,7 +50,9 @@ export async function transitionCaseState(
 
   const currentState = existingCase.status as RecoveryState;
 
-  if (!isValidTransition(currentState, newState)) {
+  const isEscalation = newState === "ESCALATED" && currentState !== "RECOVERED" && currentState !== "CLOSED";
+
+  if (!isEscalation && !isValidTransition(currentState, newState)) {
     throw new Error(
       `Invalid recovery state transition: Cannot move from ${currentState} to ${newState}.`
     );

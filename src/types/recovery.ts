@@ -30,12 +30,12 @@ export type RecoveryState =
   | "CLOSED";
 
 export const VALID_STATE_TRANSITIONS: Record<RecoveryState, RecoveryState[]> = {
-  DETECTED: ["DIAGNOSING", "CLOSED"],
-  DIAGNOSING: ["DECIDING", "FAILED", "CLOSED"],
+  DETECTED: ["DIAGNOSING", "ESCALATED", "CLOSED"],
+  DIAGNOSING: ["DECIDING", "ESCALATED", "FAILED", "CLOSED"],
   DECIDING: ["POLICY_REVIEW", "ESCALATED", "FAILED"],
   POLICY_REVIEW: ["APPROVED", "BLOCKED", "ESCALATED"],
-  APPROVED: ["EXECUTING", "BLOCKED"],
-  EXECUTING: ["VERIFYING", "FAILED"],
+  APPROVED: ["EXECUTING", "BLOCKED", "ESCALATED"],
+  EXECUTING: ["VERIFYING", "ESCALATED", "FAILED"],
   VERIFYING: ["RECOVERED", "FAILED", "EXECUTING", "ESCALATED"],
   RECOVERED: ["CLOSED"],
   FAILED: ["DIAGNOSING", "ESCALATED", "CLOSED"],
@@ -336,6 +336,8 @@ export interface CommunicationProvider {
 
 export interface VoiceCallRequest {
   to: string;
+  customerName?: string;
+  customerPhone?: string;
   language: VoiceLanguage;
   scriptTemplate: string;
   context: Record<string, string | number>;

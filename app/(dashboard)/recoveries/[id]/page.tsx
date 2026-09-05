@@ -18,6 +18,7 @@ import {
   ShieldCheck,
   AlertTriangle,
   Lock,
+  FileText,
 } from "lucide-react";
 import { RiskBadge } from "@/src/components/shared/risk-badge";
 import { StatusBadge } from "@/src/components/shared/status-badge";
@@ -26,6 +27,7 @@ import { DecisionCard } from "@/src/components/recovery/decision-card";
 import { PolicyCheckList } from "@/src/components/recovery/policy-check-list";
 import { RecoveryTimeline } from "@/src/components/recovery/recovery-timeline";
 import { AuditTimeline } from "@/src/components/audit/audit-timeline";
+import { generateRecoveryWorkflowPDF } from "@/src/lib/pdf/generate-recovery-pdf";
 
 export default function RecoveryCaseDetailPage({
   params,
@@ -153,7 +155,7 @@ export default function RecoveryCaseDetailPage({
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Back Button & Top Action Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
         <Link
           href="/recoveries"
           className="inline-flex items-center gap-1.5 text-xs font-bold text-[#667085] hover:text-[#111827]"
@@ -163,6 +165,28 @@ export default function RecoveryCaseDetailPage({
 
         {/* Interactive Action Control Strip */}
         <div className="flex items-center gap-2.5 flex-wrap">
+          <button
+            type="button"
+            onClick={() => {
+              try {
+                generateRecoveryWorkflowPDF({
+                  caseId: recCase?.id,
+                  customerName: customer?.name,
+                  amountAtRiskRupees: Math.round((recCase?.amountAtRisk || 0) / 100),
+                  rootCause: recCase?.rootCause,
+                  workflowType: recCase?.caseType,
+                  status: recCase?.status,
+                });
+              } catch (e) {
+                window.print();
+              }
+            }}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-extrabold text-white bg-[#13B981] hover:bg-[#0F9F6E] rounded-lg transition-colors shadow-sm cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Generate PDF Report
+          </button>
+
           {!isRecovered && !isBlocked && (
             <button
               onClick={handleRunAgent}
@@ -325,7 +349,7 @@ export default function RecoveryCaseDetailPage({
       </div>
 
       {/* Recovery Timeline (7 Stages) */}
-      <RecoveryTimeline status={recCase?.status} amountRecovered={recCase?.amountAtRisk} />
+      <RecoveryTimeline status={recCase?.status} amountRecovered={recCase?.amountAtRisk} caseData={recCase} />
 
       {/* 2-Column Grid: AI Decision vs Policy Validation */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

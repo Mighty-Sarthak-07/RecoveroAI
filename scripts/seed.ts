@@ -1,4 +1,5 @@
 import { db } from "@/src/db";
+import { eq } from "drizzle-orm";
 import {
   actionLogs,
   caseContext,
@@ -29,6 +30,16 @@ import { logAuditEvent } from "@/src/lib/audit";
  */
 export async function seedDemoData() {
   console.log("Seeding RecoveroAI database...");
+
+  // 0. Clean up existing demo merchant if present to guarantee idempotency
+  const existingMerchants = await db
+    .select({ id: merchants.id })
+    .from(merchants)
+    .where(eq(merchants.email, "finance@recoveroai.com"));
+
+  for (const m of existingMerchants) {
+    await db.delete(merchants).where(eq(merchants.id, m.id));
+  }
 
   // 1. Merchant
   const [merchant] = await db
@@ -678,4 +689,107 @@ export async function seedDemoData() {
 
   console.log("Seeding completed successfully!");
   return { merchantId: merchant.id };
+}
+
+export async function generateDemoTransactionsBatch(requestedCount: number = 50) {
+  const count = Math.max(10, Math.min(requestedCount, 500));
+  console.log(`Generating ${count} realistic demo transactions...`);
+
+  // Ensure default merchant exists
+  let [merchant] = await db
+    .select({ id: merchants.id })
+    .from(merchants)
+    .where(eq(merchants.email, "finance@recoveroai.com"))
+    .limit(1);
+
+  if (!merchant) {
+    const seedRes = await seedDemoData();
+    merchant = { id: seedRes.merchantId };
+  }
+
+  const indianNames = [
+    "Aarav Patel", "Ananya Sharma", "Rohan Gupta", "Pooja Verma", "Vikram Singh",
+    "Siddharth Rao", "Divya Nair", "Karan Mehta", "Meera Iyer", "Kabir Joshi",
+    "Neha Agarwal", "Aditya Kulkarni", "Kavya Menon", "Manish Saxena", "Shreya Bhat",
+  ];
+
+  const caseTypes = [
+    "payment_failure", "checkout_abandonment", "subscription_failure",
+    "b2b_receivable", "mandate_retry", "voice_recovery", "promise_to_pay", "success"
+  ];
+
+  const failureReasons = [
+    "insufficient_funds", "do_not_honor", "card_expired", "mandate_technical_decline",
+    "checkout_session_timeout", "bank_server_down", "authentication_failed"
+  ];
+
+  let casesCreated = 0;
+  let totalRevenueAtRiskCents = 0;
+
+  for (let i = 0; i < count; i++) {
+    const name = indianNames[i % indianNames.length] + ` #${i + 1}`;
+    const email = `demo_customer_${Date.now()}_${i}@example.com`;
+    const phone = `+9198${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const ltvCents = Math.floor(1000000 + Math.random() * 90000000);
+
+    const [customer] = await db
+      .insert(customers)
+      .values({
+        merchantId: merchant.id,
+        externalId: `cus_batch_${Date.now()}_${i}`,
+        name,
+        email,
+        phone,
+        lifetimeValue: ltvCents,
+        contactPermission: true,
+        riskScore: Math.floor(10 + Math.random() * 70),
+        status: "active",
+      })
+      .returning();
+
+    const selectedType = caseTypes[i % caseTypes.length];
+    const isSuccess = selectedType === "success";
+    const amountCents = Math.floor(99900 + Math.random() * 1500000);
+    const reason = failureReasons[i % failureReasons.length];
+
+    const [payment] = await db
+      .insert(payments)
+      .values({
+        merchantId: merchant.id,
+        customerId: customer.id,
+        razorpayPaymentId: `pay_demo_${Date.now()}_${i}`,
+        amount: amountCents,
+        currency: "inr",
+        status: isSuccess ? "succeeded" : "failed",
+        failureReason: isSuccess ? null : reason,
+        paymentMethodType: i % 3 === 0 ? "upi" : i % 3 === 1 ? "nach" : "card",
+        paymentMethodLast4: `${1000 + (i % 9000)}`,
+        retryCount: isSuccess ? 0 : 1,
+      })
+      .returning();
+
+    if (!isSuccess) {
+      casesCreated++;
+      totalRevenueAtRiskCents += amountCents;
+
+      await db.insert(recoveryCases).values({
+        merchantId: merchant.id,
+        customerId: customer.id,
+        paymentId: payment.id,
+        caseType: selectedType,
+        amountAtRisk: amountCents,
+        riskScore: Math.floor(30 + Math.random() * 50),
+        riskLevel: amountCents > 5000000 ? "HIGH" : "MEDIUM",
+        rootCause: reason,
+        status: "DETECTED",
+        nextActionAt: new Date(Date.now() + 6 * 3600000),
+      });
+    }
+  }
+
+  return {
+    generatedCount: count,
+    casesCreated,
+    totalRevenueAtRiskRupees: Math.round(totalRevenueAtRiskCents / 100),
+  };
 }

@@ -22,7 +22,9 @@ import {
   Search,
   Bell,
   HelpCircle,
+  Database,
 } from "lucide-react";
+import { DataSourceModal } from "@/src/components/onboarding/data-source-modal";
 
 const NAV_ITEMS = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -47,6 +49,7 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const [isTriggering, setIsTriggering] = useState(false);
+  const [isDataSourceModalOpen, setIsDataSourceModalOpen] = useState(false);
 
   const triggerDemoEvent = async (endpoint: string, successMsg: string) => {
     setIsTriggering(true);
@@ -181,6 +184,14 @@ export default function DashboardLayout({
 
           <div className="flex items-center gap-3">
             <button
+              onClick={() => setIsDataSourceModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-[#5B3DF5] hover:bg-[#4D32D8] rounded-lg transition-colors shadow-xs"
+            >
+              <Database className="w-3.5 h-3.5" />
+              Connect Data Source
+            </button>
+
+            <button
               onClick={() =>
                 triggerDemoEvent("/api/demo/generate", "Demo dataset seeded successfully!")
               }
@@ -212,6 +223,15 @@ export default function DashboardLayout({
         {/* Dynamic Page Content */}
         <main className="flex-1 overflow-y-auto p-6 md:p-8">{children}</main>
       </div>
+
+      {/* Global Data Source Modal */}
+      <DataSourceModal
+        isOpen={isDataSourceModalOpen}
+        onClose={() => setIsDataSourceModalOpen(false)}
+        onSuccess={() => {
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

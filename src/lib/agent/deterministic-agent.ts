@@ -5,6 +5,9 @@ import {
 import { evaluateCandidateInterventions } from "@/src/lib/cost/cost-engine";
 
 export interface ContextParams {
+  customerId?: string;
+  paymentId?: string;
+  customerEmail?: string;
   amountAtRisk: number; // in cents
   failureReason?: string | null;
   retryCount: number;

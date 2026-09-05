@@ -10,56 +10,51 @@ export default function B2BReceivablesPage() {
   const [loading, setLoading] = useState(false);
   const [filterStatus, setFilterStatus] = useState("ALL");
 
-  const staticInvoices = [
+  useEffect(() => {
+    fetch("/api/recoveries")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.cases) {
+          const b2bCases = data.cases.filter(
+            (c: any) => c.caseType === "b2b_receivable"
+          );
+          if (b2bCases.length > 0) {
+            setInvoicesList(
+              b2bCases.map((c: any) => ({
+                id: c.id,
+                invoiceNumber: `INV-2026-${c.id.substring(0, 4).toUpperCase()}`,
+                customer: c.customerName || "B2B Client",
+                amount: c.amountAtRisk,
+                daysOverdue: 12,
+                status: c.status === "RECOVERED" ? "paid" : "overdue",
+                priority: "high",
+                accountOwner: "Enterprise Collections",
+                lastAction: c.rootCause || "Overdue Invoice Chaser",
+                caseId: c.id,
+              }))
+            );
+          }
+        }
+      })
+      .catch((e) => console.error(e));
+  }, []);
+
+  const defaultInvoices = [
     {
       id: "inv_8500",
       invoiceNumber: "INV-2026-8500",
       customer: "TechCorp Global India",
-      amount: 8500000, // ₹85,000
+      amount: 8500000,
       daysOverdue: 12,
       status: "overdue",
       priority: "high",
-      accountOwner: "Pooja Deshmukh",
+      accountOwner: "Enterprise Collections",
       lastAction: "Payment Reminder Sent (Email)",
-      caseId: "case_b2b_8500",
-    },
-    {
-      id: "inv_1250",
-      invoiceNumber: "INV-2026-1250",
-      customer: "Bharat Logistics Pvt Ltd",
-      amount: 14500000, // ₹145,000
-      daysOverdue: 28,
-      status: "critically_overdue",
-      priority: "critical",
-      accountOwner: "Vikram Malhotra",
-      lastAction: "Escalated to Account Owner",
-      caseId: "case_b2b_1250",
-    },
-    {
-      id: "inv_3400",
-      invoiceNumber: "INV-2026-3400",
-      customer: "Apex Retail Solutions",
-      amount: 5200000, // ₹52,000
-      daysOverdue: 4,
-      status: "approaching_due",
-      priority: "normal",
-      accountOwner: "Pooja Deshmukh",
-      lastAction: "Friendly Reminder Scheduled",
-      caseId: "case_b2b_3400",
-    },
-    {
-      id: "inv_9100",
-      invoiceNumber: "INV-2026-9100",
-      customer: "Zenith Cloud Systems",
-      amount: 9500000, // ₹95,000
-      daysOverdue: 0,
-      status: "paid",
-      priority: "normal",
-      accountOwner: "Finance Team",
-      lastAction: "Paid via Direct Settlement",
-      caseId: "case_b2b_9100",
+      caseId: "ef4b4c53-45a4-4fff-8fa8-45bd7f343c52",
     },
   ];
+
+  const displayedInvoices = invoicesList.length > 0 ? invoicesList : defaultInvoices;
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -157,7 +152,7 @@ export default function B2BReceivablesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E7EAF0]">
-              {staticInvoices.map((inv) => (
+              {displayedInvoices.map((inv: any) => (
                 <tr key={inv.id} className="hover:bg-[#FAFBFF] transition-colors">
                   <td className="py-3.5 px-4 font-mono font-bold text-[#5B3DF5]">
                     {inv.invoiceNumber}

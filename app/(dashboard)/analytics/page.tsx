@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { PageHeader } from "@/src/components/shared/page-header";
 import { MetricCard } from "@/src/components/dashboard/metric-card";
 import { RecoveryFunnel } from "@/src/components/dashboard/recovery-funnel";
+import { TransactionBarChart } from "@/src/components/dashboard/transaction-bar-chart";
 import { TrendingUp, ShieldCheck, Zap, Clock, DollarSign } from "lucide-react";
 
 export default function AnalyticsPage() {
@@ -76,6 +77,12 @@ export default function AnalyticsPage() {
           iconBg="bg-[#F1EDFF]"
         />
       </div>
+
+      {/* Transaction & Ingestion Volume Bar Chart */}
+      <TransactionBarChart
+        totalCasesCount={funnel.atRisk}
+        revenueAtRiskRupees={Math.round(metrics.revenueAtRisk / 100)}
+      />
 
       <RecoveryFunnel data={funnel} />
 
